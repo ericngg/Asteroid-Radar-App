@@ -5,9 +5,6 @@ import androidx.room.*
 
 @Dao
 interface AsteroidDatabaseDao {
-    @Insert
-    fun insert(vararg asteroid: Asteroid)
-
     @Update
     fun update(asteroid: Asteroid)
 
@@ -21,6 +18,6 @@ interface AsteroidDatabaseDao {
     fun getAllAsteroids(): List<Asteroid>
 
     @Insert (onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(vararg asteroids: Asteroid)
+    fun insertAll(asteroids: List<Asteroid>)
 
 }

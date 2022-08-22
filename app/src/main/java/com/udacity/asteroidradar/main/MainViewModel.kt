@@ -10,6 +10,7 @@ import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.database.AsteroidDatabase
 import com.udacity.asteroidradar.database.AsteroidDatabaseDao
 import com.udacity.asteroidradar.repository.Repository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Call
@@ -20,8 +21,8 @@ import kotlin.collections.ArrayList
 
 class MainViewModel(val database: AsteroidDatabaseDao, application: Application) : AndroidViewModel(application) {
 
-    // private val data = AsteroidDatabase.getInstance(application)
-    // private val repository = Repository(data)
+    private val data = AsteroidDatabase.getInstance(application)
+    private val repository = Repository(data)
 
     private val _asteroids = MutableLiveData<List<Asteroid>>()
     val asteroids: LiveData<List<Asteroid>>
@@ -33,8 +34,12 @@ class MainViewModel(val database: AsteroidDatabaseDao, application: Application)
 
 
     init {
-        getAsteroids()
-        getPictureOfTheDay()
+        //getAsteroids()
+        //getPictureOfTheDay()
+
+        viewModelScope.launch {
+            repository.refreshData()
+        }
     }
 
     private fun getAsteroids() {
@@ -77,9 +82,8 @@ class MainViewModel(val database: AsteroidDatabaseDao, application: Application)
         viewModelScope.launch {
             try {
                 val list = NasaApi.retrofitService.getPictureOfTheDay(Constants.API_KEY)
-                Log.i("asdd", list.url)
             } catch (e: Exception) {
-                Log.e("error", "error retrieving picture of the day")
+                Log.e("error", "error retrieving picture of the day $e")
             }
         }
 
