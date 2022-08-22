@@ -1,12 +1,16 @@
 package com.udacity.asteroidradar.main
 
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.udacity.asteroidradar.database.Asteroid
 import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.api.NasaApi
 import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
+import com.udacity.asteroidradar.database.AsteroidDatabase
+import com.udacity.asteroidradar.database.AsteroidDatabaseDao
+import com.udacity.asteroidradar.repository.Repository
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -14,38 +18,100 @@ import retrofit2.Response
 import java.time.LocalDateTime
 import kotlin.collections.ArrayList
 
-class MainViewModel : ViewModel() {
-    private val _asteroids = MutableLiveData<List<Asteroid>>()
+class MainViewModel(val database: AsteroidDatabaseDao, application: Application) : AndroidViewModel(application) {
 
-    val asteroids
+    // private val data = AsteroidDatabase.getInstance(application)
+    // private val repository = Repository(data)
+
+    private val _asteroids = MutableLiveData<List<Asteroid>>()
+    val asteroids: LiveData<List<Asteroid>>
         get() = _asteroids
+
+    private val _pictureOfTheDayUrl = MutableLiveData<String>()
+    val pictureOfTheDayUrl: LiveData<String>
+        get() = _pictureOfTheDayUrl
+
 
     init {
         getAsteroids()
+        getPictureOfTheDay()
     }
 
     private fun getAsteroids() {
-
         val start = LocalDateTime.now().toString().substring(0, 10)
         val end = LocalDateTime.now().plusDays(7).toString().substring(0, 10)
 
-        NasaApi.retrofitService.getProperties(start, end, Constants.API_KEY).enqueue(object: Callback<String> {
+        viewModelScope.launch {
+            try {
+                var listResult = NasaApi.retrofitService.getAsteroids(start, end, Constants.API_KEY)
+                Log.i("test", listResult)
+                _asteroids.value = parseAsteroidsJsonResult(JSONObject(listResult))
+
+                Log.i("test", (_asteroids.value as ArrayList<Asteroid>)[0].toString())
+            } catch (e: Exception) {
+                Log.e("error", "Failure to retrieve data from api $e")
+            }
+        }
+
+        /*
+        NasaApi.retrofitService.getAsteroids(start, end, Constants.API_KEY).enqueue(object: Callback<String> {
             override fun onResponse(call: Call<String>, response: Response<String>) {
-                Log.i("success", "Successful fetching data")
+                _asteroids.value = parseAsteroidsJsonResult(JSONObject(response.body()))
 
-                val result = JSONObject(response.body())
-
-                _asteroids.value = parseAsteroidsJsonResult(result)
-
+                Log.i("success", "Data retrieved successfully")
                 Log.i("success", (_asteroids.value as ArrayList<Asteroid>)[0].toString())
-
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-                Log.i("error", "Error fetching data $t")
+                Log.e("error", "Failure to retrieve data from api $t")
             }
-
         })
 
+         */
+
+        //val results = NasaApi.retrofitService.getAsteroids(start, end, Constants.API_KEY)
+        //val asteroidsResults = parseAsteroidsJsonResult(JSONObject(results))
+    }
+
+    private fun getPictureOfTheDay() {
+        viewModelScope.launch {
+            try {
+                val list = NasaApi.retrofitService.getPictureOfTheDay(Constants.API_KEY)
+                Log.i("asdd", list.url)
+            } catch (e: Exception) {
+                Log.e("error", "error retrieving picture of the day")
+            }
+        }
+
+        /*
+        NasaApi.retrofitService.getPictureOfTheDay(Constants.API_KEY).enqueue(object: Callback<String> {
+            override fun onResponse(call: Call<String>, response: Response<String>) {
+                val json = JSONObject(response.body())
+                _pictureOfTheDayUrl.value = ""
+
+                if (json.getString("media_type").equals("image")) {
+                    _pictureOfTheDayUrl.value = json.getString("url")
+                }
+
+                _pictureOfTheDayUrl.value = "https://apod.nasa.gov/apod/image/2001/STSCI-H-p2006a-h-1024x614.jpg"
+            }
+
+            override fun onFailure(call: Call<String>, t: Throwable) {
+                Log.e("error", "Failure to retrieve picture of the day $t")
+            }
+        })
+         */
+    }
+
+    private val _navigateToAsteroidDetail = MutableLiveData<Asteroid>()
+    val navigateToAsteroidDetail
+        get() = _navigateToAsteroidDetail
+
+    fun onAsteroidClicked(asteroid: Asteroid) {
+        _navigateToAsteroidDetail.value = asteroid
+    }
+
+    fun onAsteroidDetailNavigated() {
+        _navigateToAsteroidDetail.value = null
     }
 }
