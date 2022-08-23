@@ -1,5 +1,6 @@
 package com.udacity.asteroidradar.repository
 
+import android.graphics.Picture
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,6 +23,8 @@ class Repository(private val database: AsteroidDatabase) {
         it.asDomainModel()
     }
 
+    val potd: LiveData<PictureOfTheDay> = database.pictureOfTheDayDao.getPictureOfTheDay()
+
     suspend fun refreshData() {
         withContext(Dispatchers.IO) {
             try {
@@ -33,7 +36,7 @@ class Repository(private val database: AsteroidDatabase) {
 
                 database.asteroidDatabaseDao.insertAll(asteroidsResults.asDatabaseModel())
 
-                Log.i("insertion", "Success! added asteroids to the database")
+                Log.i("refresh", "Refresh data in database")
 
             } catch (e: Exception) {
                 Log.e("error", "Repository: error retrieving data from API $e")
@@ -41,15 +44,19 @@ class Repository(private val database: AsteroidDatabase) {
         }
     }
 
-    suspend fun refreshPOTD(): PictureOfTheDay {
+    suspend fun refreshPOTD() {
         val placeholder = PictureOfTheDay("https://apod.nasa.gov/apod/image/2001/STSCI-H-p2006a-h-1024x614.jpg", "placeHolder", "No new Image for today!")
 
         val results = NasaApi.retrofitService.getPictureOfTheDay(Constants.API_KEY)
 
+        database.pictureOfTheDayDao.insert(results)
+
         if (results.mediaType != "image") {
-            return placeholder
+            database.pictureOfTheDayDao.insert(placeholder)
+        } else {
+            database.pictureOfTheDayDao.insert(results)
         }
 
-        return results
+        Log.i("refresh", "Refresh POTD in database")
     }
 }

@@ -9,7 +9,7 @@ import androidx.room.Query
 @Dao
 interface PictureOfTheDayDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPicture(potd: PictureOfTheDay)
+    suspend fun insert(potd: PictureOfTheDay)
 
     @Query("DElETE FROM picture_of_the_day_table")
     suspend fun clear()
