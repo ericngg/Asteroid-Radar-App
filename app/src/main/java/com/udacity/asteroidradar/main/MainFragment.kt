@@ -35,6 +35,7 @@ class MainFragment : Fragment() {
         val adapter = AsteroidAdapter(AsteroidAdapter.AsteroidListener{ asteroid ->
             mainViewModel.onAsteroidClicked(asteroid)
         })
+
         binding.asteroidRecycler.adapter = adapter
 
         mainViewModel.navigateToAsteroidDetail.observe(viewLifecycleOwner, Observer { asteroid ->

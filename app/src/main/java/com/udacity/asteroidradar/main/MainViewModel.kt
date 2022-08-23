@@ -9,6 +9,7 @@ import com.udacity.asteroidradar.api.NasaApi
 import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.database.AsteroidDatabase
 import com.udacity.asteroidradar.database.AsteroidDatabaseDao
+import com.udacity.asteroidradar.database.PictureOfTheDay
 import com.udacity.asteroidradar.repository.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,13 +25,11 @@ class MainViewModel(val database: AsteroidDatabaseDao, application: Application)
     private val data = AsteroidDatabase.getInstance(application)
     private val repository = Repository(data)
 
-    private val _asteroids = MutableLiveData<List<Asteroid>>()
-    val asteroids: LiveData<List<Asteroid>>
-        get() = _asteroids
+    val asteroids: LiveData<List<Asteroid>> = repository.asteroids
 
-    private val _pictureOfTheDayUrl = MutableLiveData<String>()
-    val pictureOfTheDayUrl: LiveData<String>
-        get() = _pictureOfTheDayUrl
+    private val _pictureOfTheDay = MutableLiveData<PictureOfTheDay>()
+    val pictureOfTheDay: LiveData<PictureOfTheDay>
+        get() = _pictureOfTheDay
 
 
     init {
@@ -39,9 +38,10 @@ class MainViewModel(val database: AsteroidDatabaseDao, application: Application)
 
         viewModelScope.launch {
             repository.refreshData()
+            _pictureOfTheDay.value = repository.refreshPOTD()
         }
     }
-
+/*
     private fun getAsteroids() {
         val start = LocalDateTime.now().toString().substring(0, 10)
         val end = LocalDateTime.now().plusDays(7).toString().substring(0, 10)
@@ -106,6 +106,7 @@ class MainViewModel(val database: AsteroidDatabaseDao, application: Application)
         })
          */
     }
+ */
 
     private val _navigateToAsteroidDetail = MutableLiveData<Asteroid>()
     val navigateToAsteroidDetail
