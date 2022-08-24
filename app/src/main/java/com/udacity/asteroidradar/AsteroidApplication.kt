@@ -17,12 +17,14 @@ class AsteroidApplication : Application() {
         refreshData()
     }
 
+    // Creates coroutine to set worker
     private fun refreshData() {
         applicationScope.launch {
             setupRecurringWork()
         }
     }
 
+    // Creating worker
     private fun setupRecurringWork() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED)

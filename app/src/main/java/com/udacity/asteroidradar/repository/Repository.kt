@@ -23,8 +23,13 @@ class Repository(private val database: AsteroidDatabase) {
         it.asDomainModel()
     }
 
+    val todayAsteroids: LiveData<List<Asteroid>> = Transformations.map(database.asteroidDatabaseDao.getTodayAsteroids("2022-08-24")) {
+        it.asDomainModel()
+    }
+
     val potd: LiveData<PictureOfTheDay> = database.pictureOfTheDayDao.getPictureOfTheDay()
 
+    // function to refresh the asteroid data
     suspend fun refreshData() {
         withContext(Dispatchers.IO) {
             try {
@@ -44,11 +49,11 @@ class Repository(private val database: AsteroidDatabase) {
         }
     }
 
+    // function to refresh the picture of the day
     suspend fun refreshPOTD() {
         val placeholder = PictureOfTheDay("https://apod.nasa.gov/apod/image/2001/STSCI-H-p2006a-h-1024x614.jpg", "placeHolder", "No new Image for today!")
 
         val results = NasaApi.retrofitService.getPictureOfTheDay(Constants.API_KEY)
-
         database.pictureOfTheDayDao.insert(results)
 
         if (results.mediaType != "image") {

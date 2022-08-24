@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.udacity.asteroidradar.database.Asteroid
 
+// Entity for DB transactions
 @Entity(tableName = "asteroid_table")
 data class AsteroidDB(
 

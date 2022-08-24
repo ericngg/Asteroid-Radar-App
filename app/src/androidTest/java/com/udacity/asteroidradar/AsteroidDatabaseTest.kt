@@ -40,13 +40,13 @@ class AsteroidDatabaseTest {
     @Test
     @Throws(Exception::class)
     fun insertAndGetAsteroid() {
-        val asteroid = AsteroidDB(2329437, "329437 (2002 0A22)", "2022-08-11", 19.33, 0.8091703835, 5.9275428582, 0.169307131, true)
-        //asteroidDao.insert(asteroid)
+        val asteroid = AsteroidDB(id=2004034, codename="4034 Vishnu (1986 PA)", closeApproachDate="2022-08-24", absoluteMagnitude=18.41, estimatedDiameter=1.2360612132, relativeVelocity=9.3961448096, distanceFromEarth=0.3143421481, isPotentiallyHazardous=true)
+        asteroidDao.insert(asteroid)
 
-        val temp = asteroidDao.get(2329437)
+        val temp = asteroidDao.getTodayAsteroids("2022-08-24")
 
         if (temp != null) {
-            assertEquals(asteroid.id, temp.id)
+            temp.value?.get(0)?.let { assertEquals(asteroid.id, it.id) }
         }
     }
 }

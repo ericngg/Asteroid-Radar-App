@@ -11,6 +11,6 @@ class MainViewModelFactory(val dao: AsteroidDatabaseDao, val app: Application) :
             @Suppress("uncheck_cast")
             return MainViewModel(dao, app) as T
         }
-        throw IllegalArgumentException("Unable to construct viewmodel")
+        throw IllegalArgumentException("Error creating mainViewModel")
     }
 }
